@@ -1,10 +1,11 @@
 using SoPets.GOAP.Types;
 using SoPets.GOAP.Core;
 using SoPets.GOAP.Planner;
+using Microsoft.Extensions.Logging;
 
 namespace SoPets.GOAP.Actions;
 
-public class ActionEatFood : SPGoapAction
+public class ActionEatFood(ILogger? logger) : SPGoapAction(logger)
 {
     public override SPActionKey GetKey()
     {

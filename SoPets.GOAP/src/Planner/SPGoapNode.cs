@@ -10,7 +10,7 @@ namespace SoPets.GOAP.Planner;
 /// </summary>
 public sealed class SPGoapNode
 {
-    private readonly ILogger<SPGoapNode>? _logger;
+    private readonly ILogger? _logger;
 
     /// <summary>
     /// Flag to enable verbose logging for debugging purposes.
@@ -94,9 +94,12 @@ public sealed class SPGoapNode
                       SPGoapAgent agent,
                       SPGoapAction? nextAction,
                       SPBeliefContext? settings,
+                      ILogger? logger,
                       bool verbose = false)
     {
         _verbose = verbose;
+        _logger = logger;
+
         _agent = agent;
         _parent = parent;
         _action = nextAction;
@@ -274,12 +277,13 @@ public sealed class SPGoapNode
                 nodeContext.settings = setting;
 
                 // Check whether action is viable
-                if (possibleAction.IsActionViableFast(nodeContext))
+                if (possibleAction.IsActionViableFast(nodeContext, verbose: _verbose))
                 {
                     var newNode = new SPGoapNode(
                         agent: _agent,
                         settings: setting,
                         parent: this,
+                        logger: _logger,
                         nextAction: possibleAction
                     );
 

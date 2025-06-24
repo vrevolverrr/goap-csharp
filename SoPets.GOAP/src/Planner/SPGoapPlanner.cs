@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using System.Text;
+using Microsoft.Extensions.Logging;
 using SoPets.GOAP.Core;
 using SoPets.GOAP.Types;
 using SoPets.GOAP.Actions;
@@ -9,6 +10,9 @@ namespace SoPets.GOAP.Planner;
 
 public static class SPGoapPlanner
 {
+    private static ILogger? _logger;
+    private static readonly bool verbose = false;
+
     static readonly int MAX_NODES_TO_EXPAND = 100;
     static readonly int MAX_INTERATIONS = 1000;
 
@@ -19,9 +23,9 @@ public static class SPGoapPlanner
 
     private static readonly Dictionary<SPActionKey, SPGoapAction> _actions = new()
     {
-        [SPActionKey.WANDER] = new ActionWander(),
-        [SPActionKey.MOVE_TO_TARGET] = new ActionMoveToTarget(),
-        [SPActionKey.EAT_FOOD] = new ActionEatFood(),
+        [SPActionKey.WANDER] = new ActionWander(_logger),
+        [SPActionKey.MOVE_TO_TARGET] = new ActionMoveToTarget(_logger),
+        [SPActionKey.EAT_FOOD] = new ActionEatFood(_logger),
     };
 
     private static readonly Dictionary<SPGoalKey, SPGoapGoal> _goals = new()
@@ -29,6 +33,12 @@ public static class SPGoapPlanner
         [SPGoalKey.WANDER] = new GoalWander(),
         [SPGoalKey.SATISFY_HUNGER] = new GoalSatisfyHunger(),
     };
+
+    public static void SetLogger(ILogger logger)
+    {
+        _logger = logger;
+    }
+
 
     public static List<SPGoapAction> GetActionsFromKeys(List<SPActionKey> actionKeys)
     {
@@ -41,7 +51,7 @@ public static class SPGoapPlanner
             }
             else
             {
-                Log.Error($"Action with key {key} not found in action set.");
+                _logger?.LogError("Action with key {key} not found in action set.", key);
             }
         }
 
@@ -55,7 +65,7 @@ public static class SPGoapPlanner
             return goal;
         }
 
-        Log.Error($"Goal with key {goalKey} not found in goal set.");
+        _logger?.LogError("Goal with key {goalKey} not found in goal set.", goalKey);
 
         throw new KeyNotFoundException($"Goal with key {goalKey} not found.");
     }
@@ -66,7 +76,9 @@ public static class SPGoapPlanner
             parent: null,
             agent: agent,
             nextAction: null,
-            settings: null
+            settings: null,
+            logger: _logger,
+            verbose: verbose
         );
 
         (SPGoapNode node, bool isOptimal) = RunSearch(start);
@@ -77,7 +89,7 @@ public static class SPGoapPlanner
         // we may need to revise the plan to ensure it is valid.
         if (!isOptimal)
         {
-            Log.Info("Plan is not optimal, revising the partial plan.");
+            _logger?.LogInformation("Plan is not optimal, revising the partial plan.");
             planActions = RevisePartialPlan(agent, planActions);
         }
 
@@ -113,7 +125,7 @@ public static class SPGoapPlanner
             // Skip if we have already explored this state with a lower cost
             if (costToReachState.TryGetValue(currentState, out float value) && currentPathCost > value)
             {
-                if (verbose) Log.Debug($"Skipping node {currentNode} with cost {currentPathCost} as it is not better than existing cost {value}.");
+                if (verbose) _logger?.LogDebug("Skipping node {currentNode} with cost {currentPathCost} as it is not better than existing cost {value}.", currentNode, currentPathCost, value);
                 continue;
             }
 
@@ -125,7 +137,7 @@ public static class SPGoapPlanner
                 bestEffortNode = currentNode;
             }
 
-            if (verbose) Log.Debug($"Expanding node: {currentNode}");
+            if (verbose) _logger?.LogDebug("Expanding node: {currentNode}", currentNode);
             foreach (var child in currentNode.Expand())
             {
                 iterations++;
@@ -134,7 +146,7 @@ public static class SPGoapPlanner
                 if (child.IsGoalSatisfied())
                 {
                     // Found a plan, early exit
-                    Log.Info($"Found a plan after {iterations} iterations.");
+                    _logger?.LogInformation("Found a plan after {iterations} iterations.", iterations);
                     return (child, true);
                 }
 
@@ -145,11 +157,11 @@ public static class SPGoapPlanner
                 // to this new path's cost, then this new path is not better. Skip it.
                 if (costToReachState.TryGetValue(childState, out float existingCost) && existingCost <= childPathCost)
                 {
-                    if (verbose) Log.Debug($"Skipping child node {child} with cost {childPathCost} as it is not better than existing cost {existingCost}.");
+                    if (verbose) _logger?.LogDebug("Skipping child node {child} with cost {childPathCost} as it is not better than existing cost {existingCost}.", child, childPathCost, existingCost);
                     continue; // Found a better or equal path already.
                 }
 
-                if (verbose) Log.Debug($"Queuing successor node: {child}");
+                if (verbose) _logger?.LogDebug("Queuing successor node: {child}", child);
 
                 float childCost = child.GetCost();
                 costToReachState[childState] = childCost;
@@ -161,7 +173,7 @@ public static class SPGoapPlanner
             }
         }
 
-        Log.Info($"Failed to find a optimal plan after {iterations} iterations. Using the best effort plan.");
+        _logger?.LogInformation("Failed to find a optimal plan after {iterations} iterations. Using the best effort plan.", iterations);
         return (bestEffortNode, false);
     }
 
@@ -177,7 +189,7 @@ public static class SPGoapPlanner
 
             planActions.Add(new SPPlanAction(
                 actionKey: action.GetKey(),
-                actionSettings: SPActionSettings.FromContext(currentNode.GetSettings())
+                actionSettings: currentNode.GetSettings()
             ));
 
             currentNode = currentNode.GetParent()!;
@@ -208,7 +220,7 @@ public static class SPGoapPlanner
             SPPlanAction action = planActions[i];
 
             SPGoapAction actionInstance = _actions.GetValueOrDefault(action.ActionKey)!;
-            nodeContext.settings = action.ActionSettings.ToContext();
+            nodeContext.settings = action.ActionSettings;
 
             if (actionInstance.ArePreconditionsSatisfied(nodeContext))
             {
@@ -232,7 +244,8 @@ public static class SPGoapPlanner
         {
             StringBuilder actionSettings = new();
 
-            foreach (var kvp in action.ActionSettings)
+
+            foreach (var kvp in action.ActionSettings ?? [])
             {
                 actionSettings.Append($"{kvp.Key.BeliefKey}={kvp.Value}, ");
             }

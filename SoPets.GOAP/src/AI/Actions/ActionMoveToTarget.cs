@@ -1,10 +1,11 @@
 using SoPets.GOAP.Types;
 using SoPets.GOAP.Core;
 using SoPets.GOAP.Planner;
+using Microsoft.Extensions.Logging;
 
 namespace SoPets.GOAP.Actions;
 
-public class ActionMoveToTarget : SPGoapAction
+public class ActionMoveToTarget(ILogger? logger) : SPGoapAction(logger)
 {
     public static float COST_SCALING_FACTOR = 1.0f;
 

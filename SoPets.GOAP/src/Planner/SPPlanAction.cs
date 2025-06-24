@@ -1,9 +1,10 @@
+using SoPets.GOAP.Types;
+using SoPets.GOAP.Core;
 
 namespace SoPets.GOAP.Planner;
 
-[Type]
-public readonly partial struct SPPlanAction(SPActionKey actionKey, SPActionSettings actionSettings)
+public readonly struct SPPlanAction(SPActionKey actionKey, SPBeliefContext? actionSettings)
 {
     public SPActionKey ActionKey { get; init; } = actionKey;
-    public SPActionSettings ActionSettings { get; init; } = actionSettings;
+    public SPBeliefContext? ActionSettings { get; init; } = actionSettings;
 }
