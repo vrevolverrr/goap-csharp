@@ -1,7 +1,4 @@
-using SoPets.GOAP.Core;
-using SoPets.GOAP.Types;
-
-namespace SoPets.GOAP.Planner;
+namespace SoPets.GOAP;
 
 public class SPGoapNodeContext(
     SPBeliefContext initialBeliefs,

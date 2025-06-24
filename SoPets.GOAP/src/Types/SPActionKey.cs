@@ -1,5 +1,5 @@
 
-namespace SoPets.GOAP.Types;
+namespace SoPets.GOAP;
 
 public enum SPActionKey
 {

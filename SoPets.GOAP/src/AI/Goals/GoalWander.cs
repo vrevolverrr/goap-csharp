@@ -1,6 +1,3 @@
-using SoPets.GOAP.Core;
-using SoPets.GOAP.Types;
-
 namespace SoPets.GOAP.Goals;
 
 public class GoalWander : SPGoapGoal

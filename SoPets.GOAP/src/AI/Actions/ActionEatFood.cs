@@ -1,9 +1,6 @@
-using SoPets.GOAP.Types;
-using SoPets.GOAP.Core;
-using SoPets.GOAP.Planner;
 using Microsoft.Extensions.Logging;
 
-namespace SoPets.GOAP.Actions;
+namespace SoPets.GOAP;
 
 public class ActionEatFood(ILogger? logger) : SPGoapAction(logger)
 {
@@ -112,19 +109,24 @@ public class ActionEatFood(ILogger? logger) : SPGoapAction(logger)
         Dictionary<SPWorldKey, Datum> availableFoodContext =
             context.forwardState.GetBeliefs(SPBeliefKey.SAW_ITEM, SPInstanceType.FOOD);
 
-        List<SPBeliefContext> settings = [];
 
-        foreach (var (key, datum) in availableFoodContext)
+        if (!context.forwardState.TryGetContext(new SPWorldKey(SPBeliefKey.IS_AT_POSITION), out Datum? currentPosition) || currentPosition == null)
         {
-            SPBeliefContext newSettingsContext = new();
-            // Sets the food item as the target food
-            SPWorldKey targetFoodKey = new(SPBeliefKey.TARGET_FOOD, SPInstanceType.FOOD, key.InstanceId);
-            newSettingsContext.SetContext(targetFoodKey, datum);
-
-            settings.Add(newSettingsContext);
-            // TODO DEAL WITH THIS, RETURN CLOSEST FOOD ITEM FIRST THEN RELY ON THE PLANNER TO REORDER AFTERWARDS
+            // If we cannot find the current position in forward state, we cannot move
+            return [];
         }
 
-        return settings;
+        // Sort the food items by their distance to the agent's current position
+        // TODO optimize or cache this to avoid repeated calculations
+        IEnumerable<SPWorldKey> nearestFood = availableFoodContext
+            .OrderBy(kvp => kvp.Value.DistanceTo(currentPosition))
+            .Select(kvp => kvp.Key)
+            .Take(1);
+
+        if (!nearestFood.Any()) return [];
+
+        return [
+            new SPBeliefContext(new SPWorldKey(SPBeliefKey.TARGET_FOOD, SPInstanceType.FOOD, nearestFood.First().InstanceId), availableFoodContext[nearestFood.First()])
+        ];
     }
 }

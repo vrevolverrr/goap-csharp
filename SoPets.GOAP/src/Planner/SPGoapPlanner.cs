@@ -1,17 +1,14 @@
 using System.Collections.Immutable;
 using System.Text;
 using Microsoft.Extensions.Logging;
-using SoPets.GOAP.Core;
-using SoPets.GOAP.Types;
-using SoPets.GOAP.Actions;
 using SoPets.GOAP.Goals;
 
-namespace SoPets.GOAP.Planner;
+namespace SoPets.GOAP;
 
 public static class SPGoapPlanner
 {
     private static ILogger? _logger;
-    private static readonly bool verbose = false;
+    private static readonly bool verbose = true;
 
     static readonly int MAX_NODES_TO_EXPAND = 100;
     static readonly int MAX_INTERATIONS = 1000;

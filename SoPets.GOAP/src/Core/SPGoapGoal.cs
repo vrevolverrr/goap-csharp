@@ -1,6 +1,4 @@
-using SoPets.GOAP.Types;
-
-namespace SoPets.GOAP.Core;
+namespace SoPets.GOAP;
 
 public abstract class SPGoapGoal
 {
@@ -11,5 +9,4 @@ public abstract class SPGoapGoal
     public abstract SPGoapContext<SPWorldKey, SPGoapCondition> GetConditions(SPBeliefContext beliefs);
 
     public abstract float GetPriority(SPBeliefContext beliefs);
-
 }

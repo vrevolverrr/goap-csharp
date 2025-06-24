@@ -1,5 +1,5 @@
 
-namespace SoPets.GOAP.Core;
+namespace SoPets.GOAP;
 
 // TODO: write tests for these comparers, fucking hope its correct
 public interface ISPGoapRequirement

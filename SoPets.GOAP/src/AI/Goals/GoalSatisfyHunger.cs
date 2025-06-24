@@ -1,6 +1,3 @@
-using SoPets.GOAP.Core;
-using SoPets.GOAP.Types;
-
 namespace SoPets.GOAP.Goals;
 
 public class GoalSatisfyHunger : SPGoapGoal
@@ -25,6 +22,6 @@ public class GoalSatisfyHunger : SPGoapGoal
         }
 
         return new SPGoapContext<SPWorldKey, SPGoapCondition>(
-            hungerKey, new SPGoapCondition(hungerKey, new GR_GreaterEqual(hungerGoal + new IntDatum(1))));
+            hungerKey, new SPGoapCondition(hungerKey, new GR_GreaterEqual(hungerGoal + new IntDatum(500))));
     }
 }

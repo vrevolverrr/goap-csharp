@@ -1,8 +1,6 @@
-using SoPets.GOAP.Core;
-using SoPets.GOAP.Types;
 using Microsoft.Extensions.Logging;
 
-namespace SoPets.GOAP.Planner;
+namespace SoPets.GOAP;
 
 /// <summary>
 /// Represents a node in the SPGoap planner.

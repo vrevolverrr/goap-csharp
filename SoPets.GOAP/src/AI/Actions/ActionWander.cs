@@ -1,9 +1,6 @@
-using SoPets.GOAP.Types;
-using SoPets.GOAP.Core;
-using SoPets.GOAP.Planner;
 using Microsoft.Extensions.Logging;
 
-namespace SoPets.GOAP.Actions;
+namespace SoPets.GOAP;
 
 public class ActionWander(ILogger? logger) : SPGoapAction(logger)
 {

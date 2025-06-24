@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Diagnostics.CodeAnalysis;
 
-namespace SoPets.GOAP.Core;
+namespace SoPets.GOAP;
 
 public class SPGoapContext<T, W> : IEnumerable<KeyValuePair<T, W>>, IEquatable<SPGoapContext<T, W>> where T : notnull
 {

@@ -1,6 +1,4 @@
-using SoPets.GOAP.Types;
-
-namespace SoPets.GOAP.Core;
+namespace SoPets.GOAP;
 
 public class SPGoapAgent(SPBeliefContext initialBeliefs, List<SPGoapAction> actionSet, SPGoapContext<SPWorldKey, SPGoapCondition> goals)
 {

@@ -1,7 +1,4 @@
-using SoPets.GOAP.Types;
-using SoPets.GOAP.Core;
-
-namespace SoPets.GOAP.Planner;
+namespace SoPets.GOAP;
 
 public readonly struct SPPlanAction(SPActionKey actionKey, SPBeliefContext? actionSettings)
 {

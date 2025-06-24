@@ -1,4 +1,4 @@
-namespace SoPets.GOAP.Core;
+namespace SoPets.GOAP;
 
 public abstract record Datum
 {

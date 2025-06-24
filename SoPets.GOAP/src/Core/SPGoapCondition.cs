@@ -1,6 +1,4 @@
-using SoPets.GOAP.Types;
-
-namespace SoPets.GOAP.Core;
+namespace SoPets.GOAP;
 
 public readonly struct SPGoapCondition(
     SPWorldKey key, ISPGoapRequirement requirement, uint missingBeliefPenalty = 1)
