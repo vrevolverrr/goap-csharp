@@ -22,6 +22,6 @@ public class GoalSatisfyHunger : SPGoapGoal
         }
 
         return new SPGoapContext<SPWorldKey, SPGoapCondition>(
-            hungerKey, new SPGoapCondition(hungerKey, new GR_GreaterEqual(hungerGoal + new IntDatum(500))));
+            hungerKey, new SPGoapCondition(hungerKey, new GR_GreaterEqual(hungerGoal + new IntDatum(30))));
     }
 }

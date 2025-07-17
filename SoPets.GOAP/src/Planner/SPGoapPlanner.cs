@@ -8,7 +8,7 @@ namespace SoPets.GOAP;
 public static class SPGoapPlanner
 {
     private static ILogger? _logger;
-    private static readonly bool verbose = true;
+    private static readonly bool verbose = false;
 
     static readonly int MAX_NODES_TO_EXPAND = 100;
     static readonly int MAX_INTERATIONS = 1000;
@@ -18,11 +18,13 @@ public static class SPGoapPlanner
 
     // TODO: ADD PLANNER LEVEL CACHING
 
-    private static readonly Dictionary<SPActionKey, SPGoapAction> _actions = new()
+    private static Dictionary<SPActionKey, SPGoapAction> _actions = BuildActions(null);
+
+    private static Dictionary<SPActionKey, SPGoapAction> BuildActions(ILogger? logger) => new()
     {
-        [SPActionKey.WANDER] = new ActionWander(_logger),
-        [SPActionKey.MOVE_TO_TARGET] = new ActionMoveToTarget(_logger),
-        [SPActionKey.EAT_FOOD] = new ActionEatFood(_logger),
+        [SPActionKey.WANDER] = new ActionWander(logger),
+        [SPActionKey.MOVE_TO_TARGET] = new ActionMoveToTarget(logger),
+        [SPActionKey.EAT_FOOD] = new ActionEatFood(logger),
     };
 
     private static readonly Dictionary<SPGoalKey, SPGoapGoal> _goals = new()
@@ -34,6 +36,7 @@ public static class SPGoapPlanner
     public static void SetLogger(ILogger logger)
     {
         _logger = logger;
+        _actions = BuildActions(logger);
     }
 
 
