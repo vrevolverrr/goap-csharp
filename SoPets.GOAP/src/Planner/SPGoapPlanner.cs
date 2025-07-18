@@ -93,7 +93,7 @@ public static class SPGoapPlanner
             planActions = RevisePartialPlan(agent, planActions);
         }
 
-        // TODO: Post plan reordering
+        planActions = ReorderByProximity(agent, planActions);
 
         return planActions;
     }
@@ -234,6 +234,53 @@ public static class SPGoapPlanner
 
         // If we reach here, all actions in the plan are valid
         return planActions;
+    }
+
+    /// <summary>
+    /// The search builds the plan backwards from the goal, so it does not see the walk from the
+    /// agent's start position to the first target. Reorders MOVE_TO_TARGET + EAT_FOOD pairs
+    /// nearest-first from the start position. Plans of any other shape are returned unchanged.
+    /// shortcut: greedy nearest-neighbour, assumes the pairs are independent, upgrade when actions depend on each other.
+    /// </summary>
+    public static List<SPPlanAction> ReorderByProximity(SPGoapAgent agent, List<SPPlanAction> planActions)
+    {
+        if (planActions.Count == 0 || planActions.Count % 2 != 0) return planActions;
+
+        if (!agent.InitialBeliefs.TryGetContext(new SPWorldKey(SPBeliefKey.IS_AT_POSITION), out Datum? current) || current == null)
+        {
+            return planActions;
+        }
+
+        List<(Datum position, SPPlanAction move, SPPlanAction eat)> pairs = [];
+        for (int i = 0; i < planActions.Count; i += 2)
+        {
+            SPPlanAction move = planActions[i];
+            SPPlanAction eat = planActions[i + 1];
+
+            if (move.ActionKey != SPActionKey.MOVE_TO_TARGET || eat.ActionKey != SPActionKey.EAT_FOOD
+                || move.ActionSettings == null
+                || !move.ActionSettings.TryGetContext(new SPWorldKey(SPBeliefKey.TARGET_POSITION), out Datum? position)
+                || position == null)
+            {
+                return planActions;
+            }
+
+            pairs.Add((position, move, eat));
+        }
+
+        List<SPPlanAction> reordered = [];
+        while (pairs.Count > 0)
+        {
+            var next = pairs.MinBy(pair => pair.position.DistanceTo(current!));
+
+            reordered.Add(next.move);
+            reordered.Add(next.eat);
+
+            current = next.position;
+            pairs.Remove(next);
+        }
+
+        return reordered;
     }
 
     public static string PrettyPrintPlan(List<SPPlanAction> planActions)
